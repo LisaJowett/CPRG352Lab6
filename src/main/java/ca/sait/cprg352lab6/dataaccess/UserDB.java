@@ -42,12 +42,12 @@ public class UserDB
                 users.add(user);
             }
         } 
-        finally 
-        {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
-        }
+            finally 
+            {
+                DBUtil.closeResultSet(rs);
+                DBUtil.closePreparedStatement(ps);
+                cp.freeConnection(con);
+            }
 
         return users;
     }
@@ -79,12 +79,12 @@ public class UserDB
                 user = new User(email, active, firstName, lastName, password, role);
             }
         } 
-        finally 
-        {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
-        }
+            finally 
+            {
+                DBUtil.closeResultSet(rs);
+                DBUtil.closePreparedStatement(ps);
+                cp.freeConnection(con);
+            }
         
         return user;
     }
@@ -94,7 +94,7 @@ public class UserDB
         ConnectionPool cp = ConnectionPool.getInstance();
         Connection con = cp.getConnection();
         PreparedStatement ps = null;
-        String sql = "INSERT INTO `userdb`.`user`(`email`, `first_name`, `last_name`, `password`, `role`) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO user(`email`, `first_name`, `last_name`, `password`, `role`) VALUES (?, ?, ?, ?, ?)";
         
         boolean inserted = false;
 
@@ -118,48 +118,65 @@ public class UserDB
                 inserted = false;
             }*/
         } 
-        finally 
-        {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
-        }
+            finally 
+            {
+                DBUtil.closePreparedStatement(ps);
+                cp.freeConnection(con);
+            }
 
         return inserted;
     }
 
-    public void update(User user) throws Exception 
+    public boolean update(User user) throws Exception 
     {
         ConnectionPool cp = ConnectionPool.getInstance();
         Connection con = cp.getConnection();
         PreparedStatement ps = null;
-        String sql = "UPDATE user SET first_name=?, contents=? WHERE note_id=?";
+        String sql = "UPDATE user SET `first_name` = ?, `last_name` = ?, `password` = ?, `role` = ? WHERE email = ?";
+
+        boolean updated;
         
-        try {
+        try 
+        {
             ps = con.prepareStatement(sql);
-            ps.setString(1, note.getTitle());
-            ps.setString(2, note.getContents());
-            ps.setInt(3, note.getNoteId());
-            ps.executeUpdate();
-        } finally {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
-        }
+            ps.setString(1, user.getFirstName());
+            ps.setString(2, user.getLastName());
+            ps.setString(3, user.getPassword());
+            ps.setInt(4, user.getRole().getId());
+            ps.setString(5, user.getEmail());
+            updated = ps.executeUpdate() != 0;
+        } 
+            finally 
+            {
+                DBUtil.closePreparedStatement(ps);
+                cp.freeConnection(con);
+            }
+
+        return updated;
     }
 
-    public void delete(Note note) throws Exception {
+    public boolean delete(User user) throws Exception 
+    {
         ConnectionPool cp = ConnectionPool.getInstance();
         Connection con = cp.getConnection();
         PreparedStatement ps = null;
-        String sql = "DELETE FROM note WHERE note_id=?";
+        String sql = "DELETE FROM user WHERE email = ?";
+
+        boolean deleted;
         
-        try {
+        try 
+        {
             ps = con.prepareStatement(sql);
-            ps.setInt(1, note.getNoteId());
-            ps.executeUpdate();
-        } finally {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
-        }
+            ps.setString(1, user.getEmail());
+            deleted = ps.executeUpdate() != 0;
+        } 
+            finally 
+            {
+                DBUtil.closePreparedStatement(ps);
+                cp.freeConnection(con);
+            }
+
+        return deleted;
     }
 
 }
