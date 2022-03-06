@@ -15,7 +15,7 @@ public class UserService
         return user;
     }
     
-    public List<User> getAll(String email) throws Exception 
+    public List<User> getAll() throws Exception 
     {
         List<User> users = this.userDB.getAll();
         return users;
