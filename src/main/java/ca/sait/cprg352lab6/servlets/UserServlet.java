@@ -1,7 +1,9 @@
 package ca.sait.cprg352lab6.servlets;
 
+import ca.sait.cprg352lab6.models.Role;
 import ca.sait.cprg352lab6.models.User;
 import ca.sait.cprg352lab6.services.UserService;
+import ca.sait.cprg352lab6.services.RoleService;
 import java.io.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -31,21 +33,49 @@ public class UserServlet extends HttpServlet
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException 
     {
-        UserService service = new UserService();
+        UserService serviceUser = new UserService();
+        RoleService serviceRole = new RoleService();
+        String email = request.getParameter("email");
+        String action = request.getParameter("action");
 
         try
         {
-            List<User> users = service.getAll();
+            List<User> users = serviceUser.getAll();
 
-            request.setAttribute("users", users);
-
-            this.getServletContext().getRequestDispatcher("/WEB-INF/users.jsp").forward(request, response);
+            request.setAttribute("users", users);    
         }
 
         catch(Exception ex)
         {
             Logger.getLogger(UserServlet.class.getName()).log(Level.SEVERE, null, ex);
         }  
+
+        try
+        {
+            List<Role> roles = serviceRole.getAll();
+
+            request.setAttribute("roles", roles);
+        }
+
+        catch(Exception ex)
+        {
+            Logger.getLogger(UserServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+
+        if (action.equals("delete") && action != null)
+        {
+            try
+            {
+                serviceUser.delete(email);
+            }
+        
+            catch (Exception ex)
+            {
+                request.setAttribute("message", "Something went wrong, please try again.");
+            }
+        }
+
+        this.getServletContext().getRequestDispatcher("/WEB-INF/users.jsp").forward(request, response);
     }
 
     /**
@@ -60,7 +90,80 @@ public class UserServlet extends HttpServlet
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException 
     {
-        this.getServletContext().getRequestDispatcher("/WEB-INF/users.jsp").forward(request, response);
-    }
+        
+        UserService serviceUser = new UserService();
+        RoleService serviceRole = new RoleService();
+        
+        String action = request.getParameter("action");
 
+        try
+        {
+            List<User> users = serviceUser.getAll();
+
+            request.setAttribute("users", users);    
+        }
+
+        catch(Exception ex)
+        {
+            Logger.getLogger(UserServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+
+        try
+        {
+            List<Role> roles = serviceRole.getAll();
+
+            request.setAttribute("roles", roles);
+        }
+
+        catch(Exception ex)
+        {
+            Logger.getLogger(UserServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+
+        if (action.equals("edit") && action != null)
+        {
+
+            try
+            {
+                String email = request.getParameter("editEmail");
+                String firstName = request.getParameter("editFirstName");
+                String lastName = request.getParameter("editLastName");
+                String password = request.getParameter("editPassword");
+                String roleName = request.getParameter("editRoleName");
+
+                int roleId = serviceRole.getRoleId(roleName);
+
+                serviceUser.update(email, true, firstName, lastName, password, new Role(roleId, roleName));
+            }
+
+            catch(Exception ex)
+            {
+                request.setAttribute("message", "Something went wrong, please try again.");
+            }
+        }
+
+        if (action.equals("add") && action != null)
+        {
+
+            try
+            {
+                String email = request.getParameter("addEmail");
+                String firstName = request.getParameter("addFirstName");
+                String lastName = request.getParameter("addLastName");
+                String password = request.getParameter("addPassword");
+                String roleName = request.getParameter("addRoleName");
+
+                int roleId = serviceRole.getRoleId(roleName);
+
+                serviceUser.insert(email, true, firstName, lastName, password, new Role(roleId, roleName));
+            }
+
+            catch(Exception ex)
+            {
+                request.setAttribute("message", "Something went wrong, please try again.");
+            }
+        }
+
+        this.getServletContext().getRequestDispatcher("/WEB-INF/users.jsp").forward(request, response);
+    }  
 }
